@@ -1,0 +1,6 @@
+basedir=/var/www/cgi-bin/enemies/
+viewdir=views
+logfile=data/log.json
+dataset=data/cpdata.json
+enemies=data/enemies.json
+dnsrbls=zen.spamhaus.org,bl.spamcop.net

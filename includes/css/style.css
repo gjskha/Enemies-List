@@ -1,0 +1,115 @@
+p { 
+    padding: 10px;
+}
+ul {
+    list-style-type: none;
+} 
+.odd {
+    background-color: #e7fffc;
+}
+h1 {
+    text-align: center;
+}
+.centered {
+    text-align: center;
+    padding: 20px;
+}
+td {
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
+table {
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 100%;
+}
+
+form {
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
+body{
+    margin:0;
+    padding:0;
+    line-height: 1.5em;
+    font-size: 120%;
+}
+
+#topsection{
+    height: 90px; 
+    background-color: #99CC99;
+    color: #008080;
+    padding-bottom: 20px;
+}
+
+#topsection h1{
+    margin: 0;
+    padding-top: 15px;
+}
+
+#topsection a {
+    color: #008080;
+    text-decoration: none;
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+#topsection a:hover {
+    text-decoration: underline;
+}
+#contentwrapper{
+    float: left;
+    width: 100%;
+}
+
+#contentcolumn{
+    /* margin-left: 400px; */ /*Set left margin to LeftColumnWidth*/
+    margin-left: 430px; /*Set left margin to LeftColumnWidth*/
+}
+
+#leftcolumn{
+    float: left;
+    width: 400px; /*Width of left column*/
+    margin-left: -100%;
+    border-right: 1px dotted #99CC99;
+    padding-left: 20px;
+}
+
+#footer{
+    clear: left;
+    width: 100%;
+    text-align: center;
+    padding: 4px 0;
+}
+
+.innertube{
+    margin: 10px; /*Margins for inner DIV inside each column (to provide padding)*/
+    margin-top: 0;
+}
+
+.promoted {
+    display: none;
+    color: red;
+}
+
+input.edit {
+    width: 500px;
+
+}
+ul {
+    list-style-type: none;
+} 
+
+.warning {
+    font-size: 130%;  
+}

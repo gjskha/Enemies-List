@@ -1,0 +1,6 @@
+{"enemies":[{ "name" : "SPAMMERS-R-US", "asn" : "123456", "disp" : "spammers" },
+            { "name" : "HIJACKED-AS", "asn" : "111111", "disp" : "hijacked" },
+            { "name" : "CRACKERZ", "asn" : "101010101", "disp" : "crackers" },
+            { "name" : "UNKNOWN", "asn" : "22222222", "disp" : "unknown" }],
+"random":928569,
+"last_mod":"Thu Jun 13 02:00:01 PDT 2013"}
