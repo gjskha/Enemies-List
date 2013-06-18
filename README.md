@@ -24,9 +24,9 @@ of manipulation and tracking thereof.
 
 To start off, add a line like this via the "Edit Enemies List" page:
 
-    123456 SPAMMERS-R-US spammers
+    SPAMMERS-R-US 123456 spammers
 
-The first field is the ASN, the second is the AS name, and the third is whatever
+The first field is the AS name, the second is the ASN, and the third is whatever
 dispensation you might feel is apropriate.  Conversely, you can just dump stuff
 directly into data/enemies.json, which works with a format like this:
 
