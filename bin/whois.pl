@@ -1,71 +1,158 @@
 #!/usr/bin/perl -w
 
+=head1 NAME
+
+whois.pl - fetches CIDR ranges associated with each ASN being watched in the Enemies List
+
+=head1 DESCRIPTION
+
+This should be run before host.pl.
+
+=head1 AUTHOR
+
+gjskha AT gmail.com
+
+=cut
+
 use strict;
-use lib 'lib';
-use Enemies::File;
+use File::Basename;
+use lib dirname(__FILE__) . "/../lib";
 use Enemies::Conf;
 use Enemies::Log;
+use Enemies::Mail;
+use Enemies::Alloc;
+use Enemies::ASN;
+use Enemies::Note;
+use Enemies::List;
+use Enemies::Snippet;
+use Enemies::Cache;
 use Net::DNS;
+use DateTime;
+use Data::Dumper;
 
-my $rslvr = Net::DNS::Resolver->new;
-my $config = Enemies::Conf->read('config');
+my $config = Enemies::Conf->new;
+my $resolver = Net::DNS::Resolver->new;
+my $cidr_count = 0;
 
-my $filer = Enemies::File->new;
-my $enemies = $filer->slurp_json($config->enemies);
- 
-my $structure;
-
-foreach my $as_data (@{$enemies->{enemies}}) {
-
+foreach my $a (Enemies::List->new->fetch()) {
+    my $asn = $a->asn;
     my @allocs;
-    use Data::Dumper; print Dumper $config;
-    grep {  
-        if ( /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d\/\d\d?/ ) {
 
-            my $alloc = $&;
-            my $tester = join(".", reverse(split(/\./, reverse(substr(reverse($alloc), 3)))));
-            my $status = "unfiltered";
+    eval {
+        
+        Enemies::ASN->do_transaction( sub {
 
-            foreach my $bl (split(",", $config->dnsrbls)) {
+            my $asn_handle = Enemies::ASN->retrieve( $a->asn_id );
 
-                my $query = $rslvr->search($tester . "." . $bl );
-
-                $status = "filtered" && last if $query;
-
+            # TODO: insurance against network problem. 
+            # this can be redone as a trigger
+            my @alloc = $asn_handle->these_allocs;
+            foreach my $old_alloc ( @alloc ) {
+                $old_alloc->delete;
             }
- 
-            push(@allocs, { 
-                "alloc" => $alloc, 
-               "status" => $status, 
-            });
-        }
+    
+            grep {  
+                if ( /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d\/\d\d?/ ) {
+                    $cidr_count++;
+                    my $alloc = $&;
 
-    } `whois -h whois.cymru.com dump as$as_data->{asn}`;
-          
-    push(@{$structure->{enemies}}, { 
-        "name" => $as_data->{name}, 
-         "asn" => $as_data->{asn}, 
-        "disp" => $as_data->{disp}, 
-      "allocs" => \@allocs,
-    }); 
-     
+		    # I am taking for granted that the allocation's final octet
+		    # is a '0', and that the allocation is greater than a /30,
+		    # which I think are reasonable assumptions in this context.
+                    my $test_ip = reverse(substr(reverse($alloc), 4)) . "4";
+
+                    my $lookup_test_ip = "4." . join(".", reverse(split(/\./, reverse(substr(reverse($alloc), 4))))) . ".zen.spamhaus.org";
+                    
+                    my $query = $resolver->search($lookup_test_ip);
+
+                    my $status;
+                    if ($query) {
+                        $status = "y";
+                    } else {
+                        $status = "n";
+                    }
+
+                    Enemies::Cache->create(
+                        alloc => $alloc,
+                           ip => $test_ip,
+                         rdns => "--",
+                         addr => "--",                 
+                    );
+
+                    Enemies::Alloc->create(
+                      asn_id => $a->asn_id,
+                       alloc => $alloc,
+                        prom => $status,
+                    );
+                }
+            } `whois -h whois.cymru.com dump as$asn`;
+        });
+    };
+      
+    if( $@ ) {
+        Enemies::Log->event(
+            "who" => $ENV{USER}, 
+           "what" => "ERROR: problem updating $asn: $@"
+        );
+    } 
 }
 
-$structure->{last_mod} = `date`;
-$enemies->{random} = int(rand(1000000));
+# set the values for various statuses used in the web app.
+my $snippet = Enemies::Snippet->new;
+$snippet->random_string(int(rand(1000000)));
+$snippet->last_run(DateTime->now(time_zone => 'America/Los_Angeles')->strftime("%Y-%m-%d %H:%M:%S"));
 
-$filer->dump_struct({ 
-    "file" => $config->dataset, 
-  "struct" => $structure,
-});
+# send an email with the findings 
+my $plain;
+my @unpromoted;
+for (Enemies::Alloc->search_where( prom => "n" )) {
 
-$filer->dump_struct({ 
-    "file" => $config->enemies, 
-  "struct" => $enemies,
-});
+    my $note_search = Enemies::Note->search( entity => $_->alloc );
 
+    my $annotation;
+    if ($note_search->count > 0 ) { 
+        $annotation = $note_search->next->note;
+    }
+ 
+    push(@unpromoted, { 
+          cidr => $_->alloc, 
+          name => $_->the_asn->name,
+          disp => $_->the_asn->disp,
+          note => $annotation,
+        number => $_->the_asn->asn, 
+    });
+
+    $plain .= $_->alloc . "\n";
+}
+
+my $msg = Enemies::Mail->new();
+
+my $date = DateTime->now->dmy;
+$msg->to($config->to);
+$msg->subject("Actionable ranges on $date");
+$msg->from($config->from);
+
+my $message = $msg->format(
+    template => $config->viewdir . "/actionable.tpl",
+        data => \@unpromoted,
+);
+
+$msg->attach( 
+        Data => $message,
+        Type => "text/html",
+    Encoding => "base64"
+);
+
+$msg->attach( 
+        Data => $plain,
+        Type => "text/plain", 
+    Filename => "plain.txt",
+);
+
+$msg->send();
+
+# log this run
 Enemies::Log->event(
-    "who" => "cron", 
-   "when" => `date`,
-   "what" => "daily whois check"
+    "who" => $ENV{USER}, 
+   "what" => basename($0) . " processed $cidr_count CIDR ranges.",
 );

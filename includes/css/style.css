@@ -1,3 +1,9 @@
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 p { 
     padding: 10px;
 }
@@ -89,7 +95,11 @@ body{
     clear: left;
     width: 100%;
     text-align: center;
-    padding: 4px 0;
+    /* padding: 4px 0; */
+    background-color: #99CC99;
+    color: #008080;
+    font-style:italic;
+    padding-bottom: 20px;
 }
 
 .innertube{
@@ -97,10 +107,16 @@ body{
     margin-top: 0;
 }
 
-.promoted {
+/* already blocked allocations */
+li.y {
     display: none;
     color: red;
 }
+tr.y {
+    display: none;
+    color: red;
+}
+
 
 input.edit {
     width: 500px;
@@ -112,4 +128,30 @@ ul {
 
 .warning {
     font-size: 130%;  
+}
+
+#annotation textarea {
+    width: 350px;
+    height: 350px;
+}
+
+th {
+    text-align: left;
+}
+
+/* dispensation styles */
+.paroled {
+    background-color: #00FF00; /*green*/
+}
+.watched {
+    background-color: #00FFFF; /*cyan*/
+}
+.suspicious {
+    background-color: #FFF000; /*yellow*/    
+}
+.condemned {
+    background-color: #FF9900; /*orange*/
+}
+.cesspool {
+    background-color: #FF0000; /*red*/
 }
