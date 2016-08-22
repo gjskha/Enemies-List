@@ -1,1 +1,2 @@
-- pagination
+* pagination
+* fix sample-ip-from-range in bin/whois to use CIDR
