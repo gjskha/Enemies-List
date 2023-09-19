@@ -2,7 +2,7 @@
 
 > Always remember that others may hate you, but those who hate you don't win unless you hate them. And then you destroy yourself.
 
--- [Richard Milhouse Nixon](http://www.youtube.com/watch?v=1Ff1jxlVPEQ)
+-- [Richard Milhouse Nixon](https://www.youtube.com/watch?v=K0TSRmJsS_A)
 
 This is a minimalistic web app to aid in keeping tabs on Internet ASes of ones
 choosing.  I expect that there is a very small, boring audience for this sort
